@@ -1,0 +1,318 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>VoteSphere - Secure Digital Election Platform</title>
+
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+
+<body>
+
+{% if voter %}
+<div style="
+    text-align:center;
+    margin:20px auto;
+    padding:20px;
+    background:white;
+    border-radius:15px;
+    width:350px;
+    box-shadow:0 4px 15px rgba(0,0,0,0.15);
+">
+
+    <img
+        src="{{ voter.photo.url }}"
+        alt="Profile Photo"
+        width="120"
+        height="120"
+        style="
+            border-radius:50%;
+            border:4px solid #007bff;
+            object-fit:cover;
+        "
+    >
+
+    <div style="
+        margin-top:15px;
+        background:#4675a3;
+        color:white;
+        padding:12px;
+        border-radius:10px;
+    ">
+
+        <h3 style="margin:5px 0;">
+            Username: {{ request.user.username }}
+        </h3>
+
+        <h3 style="margin:5px 0;">
+            USN: {{ voter.usn }}
+        </h3>
+
+    </div>
+
+</div>
+{% endif %}
+
+<div class="container">
+
+    <h1 class="main-title">
+        VoteSphere - Secure Digital Election Platform
+    </h1>
+
+    {% for candidate in candidates %}
+
+    <div class="card-custom">
+
+        <h2>{{ candidate.name }}</h2>
+
+        <h4>{{ candidate.contesting_for }}</h4>
+
+        <br>
+
+        <a
+            href="/vote/{{ candidate.id }}/"
+            class="vote-btn"
+        >
+            Vote
+        </a>
+
+    </div>
+
+    {% endfor %}
+
+    <center>
+
+        {% if request.user.is_superuser %}
+
+        <a
+            href="/results/"
+            style="
+                background:#dc3545;
+                color:white;
+                padding:10px 20px;
+                text-decoration:none;
+                border-radius:8px;
+                font-weight:bold;
+            "
+        >
+            🔒 Admin View Results
+        </a>
+
+        <br><br>
+
+        {% endif %}
+
+        <a
+            href="/results/"
+            class="result-btn"
+        >
+            View Results
+        </a>
+
+    </center>
+
+</div>
+
+<!-- Chatbot -->
+
+<div id="chatbot"
+style="
+    display:none;
+    position:fixed;
+    bottom:90px;
+    right:20px;
+    width:300px;
+    background:white;
+    border:1px solid #ccc;
+    border-radius:10px;
+    padding:10px;
+    box-shadow:0 0 10px rgba(0,0,0,0.2);
+">
+
+    <h3 style="color:black;">
+    🤖 VoteSphere Assistant
+</h3>
+
+   <div id="chat-messages" style="
+    height:200px;
+    overflow-y:auto;
+    border:1px solid #eee;
+    padding:10px;
+    margin-bottom:10px;
+    color:black;
+">
+
+    <p style="
+        color:blue;
+        font-weight:bold;
+    ">
+    </p>
+
+    <p onclick="askQuestion('How many candidates are there?', this)"
+       style="cursor:pointer;color:black;font-size:16px;font-weight:bold;">
+       👉 How many candidates are there?
+    </p>
+
+    <p onclick="askQuestion('When will results be announced?', this)"
+       style="cursor:pointer;color:black;font-size:16px;font-weight:bold;">
+       👉 When will results be announced?
+    </p>
+
+    <p onclick="askQuestion('How do I vote?', this)"
+       style="cursor:pointer;color:black;font-size:16px;font-weight:bold;">
+       👉 How do I vote?
+    </p>
+
+</div>
+
+    <input
+        type="text"
+        id="userMessage"
+        placeholder="Ask a question..."
+        style="width:100%;margin-bottom:10px;"
+    >
+
+    <button
+        onclick="sendMessage()"
+        style="
+            width:100%;
+            padding:10px;
+            background:#007bff;
+            color:white;
+            border:none;
+            border-radius:5px;
+            cursor:pointer;
+        "
+    >
+        Send
+    </button>
+
+</div>
+
+<script>
+
+function toggleChatbot() {
+
+    let chatbot = document.getElementById("chatbot");
+
+    if (chatbot.style.display === "none") {
+
+        chatbot.style.display = "block";
+
+        let oldMessage =
+            document.getElementById("welcome-message");
+
+        if (oldMessage) {
+            oldMessage.remove();
+        }
+
+        let messages =
+            document.getElementById("chat-messages");
+
+        let p =
+            document.createElement("p");
+
+        p.id = "welcome-message";
+
+        p.style.color = "blue";
+        p.style.fontWeight = "bold";
+        p.style.marginBottom = "10px";
+
+        messages.prepend(p);
+
+        let text =
+            "🤖 Hi! How can I help you today?";
+
+        let i = 0;
+
+        let typing = setInterval(function() {
+
+            p.textContent =
+                text.substring(0, i + 1);
+
+            i++;
+
+            if (i >= text.length) {
+                clearInterval(typing);
+            }
+
+        }, 40);
+
+    } else {
+
+        chatbot.style.display = "none";
+
+    }
+}
+   
+function askQuestion(question) {
+
+    document.getElementById("userMessage").value = question;
+
+}
+
+function sendMessage() {
+
+    let message = document.getElementById("userMessage").value;
+
+    fetch("/chatbot/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": "{{ csrf_token }}"
+        },
+        body: JSON.stringify({
+            message: message
+        })
+    })
+
+    .then(response => response.json())
+
+    .then(data => {
+
+        document.getElementById("chat-messages").innerHTML += `
+            <p style="color:black;"><b>You:</b> ${message}</p>
+            <p style="color:blue;"><b>Bot:</b> ${data.reply}</p>
+        `;
+
+        document.getElementById("userMessage").value = "";
+    });
+
+}
+
+</script>
+
+
+    
+    
+
+     
+</script>
+
+<div id="chat-icon"
+     onclick="toggleChatbot()"
+     style="
+        position:fixed;
+        bottom:20px;
+        right:20px;
+        width:60px;
+        height:60px;
+        border-radius:50%;
+        background:#007bff;
+        color:white;
+        font-size:30px;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        cursor:pointer;
+        z-index:9999;
+     ">
+    🤖
+</div>
+
+</body>
+</html>

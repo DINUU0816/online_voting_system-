@@ -1,0 +1,12 @@
+{% load static %}
+<h1>Election Results</h1>
+
+{% for candidate in results %}
+    <h3>
+        {{ candidate.name }} - {{ candidate.party }}
+    </h3>
+
+    <p>Total Votes: {{ candidate.total_votes }}</p>
+
+    <hr>
+{% endfor %}

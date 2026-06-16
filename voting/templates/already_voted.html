@@ -1,0 +1,28 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+
+    <title>Already Voted</title>
+
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+<body class="bg-light">
+
+<div class="container mt-5">
+
+    <div class="card shadow p-5 text-center">
+
+        <h1 class="text-danger">
+            You Can Vote Only Once
+        </h1>
+
+        <a href="/results/" class="btn btn-primary mt-3">
+            View Results
+        </a>
+
+    </div>
+
+</div>
+
+</body>
+</html>
