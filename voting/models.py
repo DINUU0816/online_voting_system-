@@ -10,7 +10,6 @@ class Voter(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.usn}"
-
 class Candidate(models.Model):
     name = models.CharField(max_length=100)
 
@@ -21,7 +20,6 @@ class Candidate(models.Model):
 
     def __str__(self):
         return self.name
-
 
 class Vote(models.Model):
 
