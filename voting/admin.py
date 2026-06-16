@@ -3,10 +3,7 @@ from django.contrib.auth.models import Group
 from django.utils.html import format_html
 
 from .models import Candidate, Vote, ElectionResult, Voter
-
-
 admin.site.unregister(Group)
-
 
 @admin.register(Voter)
 class VoterAdmin(admin.ModelAdmin):
