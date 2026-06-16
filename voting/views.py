@@ -166,7 +166,6 @@ def custom_login(request):
             if user.is_superuser:
                 login(request, user)
                 return redirect('/admin/')
-
             # Voter login
             try:
                 voter = Voter.objects.get(user=user)
@@ -183,7 +182,6 @@ def custom_login(request):
 
         else:
             error = "Wrong username or password"
-
     return render(
         request,
         'login.html',
